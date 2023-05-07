@@ -1,0 +1,38 @@
+import requests
+import subprocess
+
+# function to get subdomains using sublist3r
+def sublist3r(domain):
+    try:
+        subprocess.call(['sublist3r', '-d', domain, '-o', 'subdomains.txt', '-v'])
+        with open('subdomains.txt') as f:
+            subdomains = f.read().splitlines()
+        return subdomains
+    except Exception as e:
+        print(str(e))
+        return []
+
+# function to get subdomains using crt.sh API
+def crtsh(domain):
+    try:
+        subdomains = []
+        r = requests.get('https://crt.sh/?q=%.' + domain + '&output=json')
+        json_resp = r.json()
+        for name in json_resp:
+            subdomains.append(name['name_value'])
+        return subdomains
+    except Exception as e:
+        print(str(e))
+        return []
+
+# main function to find subdomains using both techniques
+def find_subdomains(domain):
+    subdomains = set()
+    subdomains.update(sublist3r(domain))
+    subdomains.update(crtsh(domain))
+    return subdomains
+
+# example usage
+domain = "example.com"
+subdomains = find_subdomains(domain)
+print(subdomains)
